@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: horus
+  datasource:
+    url: jdbc:postgresql://localhost:5432/horus
+    username: horus
+    password: horus
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
