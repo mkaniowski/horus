@@ -10,6 +10,8 @@
 - [ ] Zbieranie logów z aplikacji w czasie rzeczywistym
 - [ ] Bardziej zaawansowana analiza logów
 - [ ] Możliwość konfiguracji progów analizy logów
+- [ ] Podstawowa autoryzacja do apliakcji
+- [ ] Większy wgląd w logi ze strony clienta (filtry, więcej informacji)
 - [ ] Testy
 - [ ] Dokumentacja
 
