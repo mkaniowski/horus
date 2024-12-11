@@ -1,6 +1,8 @@
 package org.horus.horus.utils
 
 import org.horus.horus.model.LogEntity
+import org.horus.horus.repository.LogEntityRepository
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.io.BufferedWriter
 import java.io.File
@@ -10,7 +12,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.random.Random
 
 @Service
-class FakeLogger {
+class FakeLogger(private val logRepository: LogEntityRepository) {
 
     private val random = Random(System.currentTimeMillis())
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -272,5 +274,59 @@ class FakeLogger {
                 )
             }
         }
+    }
+
+    private fun generateFakeLogs(secondsToSubstract: Int): List<LogEntity> {
+        val now = LocalDateTime.now()
+        val startTime = now.minusSeconds(secondsToSubstract.toLong())
+
+        val logs = mutableListOf<LogEntity>()
+        var currentTime = startTime
+
+        while (currentTime.isBefore(now)) {
+            val ip = randomIp()
+            val endpoint = endpoints.random(random)
+            val userAgent = userAgents.random(random)
+            val statusCode = randomStatusCode()
+            val user = randomUser()
+            val method = randomMethod()
+            val protocol = randomProtocol()
+            val httpReferer = randomReferer()
+            val requestLength = randomRequestLength(false)
+            val bodyBytesSent = randomBodyBytesSent()
+
+            when (random.nextInt(100)) {
+                in 0..1 -> logs.addAll(generateBruteForceLogs(currentTime, ip))
+                in 2..3 -> logs.addAll(generateDDoSLogs(currentTime, ip))
+                in 4..5 -> logs.addAll(generateBotActivityLogs(currentTime, ip))
+                in 6..7 -> logs.add(generateUnauthorizedAccessLog(currentTime, ip))
+                else -> logs.add(
+                    createLogEntity(
+                        timestamp = currentTime,
+                        ip = ip,
+                        endpoint = endpoint,
+                        statusCode = statusCode,
+                        userAgent = userAgent,
+                        user = user,
+                        method = method,
+                        protocol = protocol,
+                        httpReferer = httpReferer,
+                        requestLength = requestLength,
+                        bodyBytesSent = bodyBytesSent
+                    )
+                )
+            }
+
+            currentTime = currentTime.plusSeconds(random.nextLong(30, 600))
+        }
+
+        println("anonmaliesCount: $anomaliesCount")
+        return logs
+    }
+
+    @Scheduled(fixedRate = 30000)
+    fun scheduledGenerateLogs() {
+        val newLogs = generateFakeLogs(30)
+        logRepository.saveAll(newLogs)
     }
 }

@@ -180,6 +180,24 @@ class LogAnalyzerService(
 
 
     @Scheduled(fixedRate = 30000)
+    fun scheduledAnalyzeLogs() {
+        val lastAnalyzedTimestamp = lastAnalyzedTimestampRepository.findById("last_analyzed")
+            .orElse(LastAnalyzedTimestamp(timestamp = Instant.EPOCH))
+
+        val effectiveFrom = lastAnalyzedTimestamp.timestamp!!
+        val effectiveTo = Instant.now()
+
+        val logs = fetchLogs(effectiveFrom).filter { it.timestamp!!.isBefore(effectiveTo) }
+        if (logs.isNotEmpty()) {
+            detectBruteForce(logs)
+            detectDDoS(logs)
+            detectBotActivity(logs)
+
+            lastAnalyzedTimestamp.timestamp = logs.maxOf { it.timestamp!! }
+            lastAnalyzedTimestampRepository.save(lastAnalyzedTimestamp)
+        }
+    }
+
     fun analyzeLogs(from: Instant? = null, to: Instant? = null) {
         val lastAnalyzedTimestamp = lastAnalyzedTimestampRepository.findById("last_analyzed")
             .orElse(LastAnalyzedTimestamp(timestamp = Instant.EPOCH))
@@ -197,4 +215,5 @@ class LogAnalyzerService(
             lastAnalyzedTimestampRepository.save(lastAnalyzedTimestamp)
         }
     }
+
 }

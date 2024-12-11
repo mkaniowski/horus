@@ -3,7 +3,7 @@ version: '3.9'
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: horus-postgres
     environment:
       POSTGRES_USER: horus
       POSTGRES_PASSWORD: horus
