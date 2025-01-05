@@ -13,31 +13,48 @@ services:
     volumes:
       - ./postgres:/var/lib/postgresql/data
 
-  elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - ./elastic:/usr/share/elasticsearch/data
-
   logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.2
     container_name: logstash
-    image: docker.elastic.co/logstash/logstash:8.5.3
+    volumes:
+      - ./logstash-pipeline/:/usr/share/logstash/pipeline/
+    ports:
+      - "5044:5044" # Beats input port
+      - "9600:9600" # Logstash monitoring API
     environment:
-      - CONFIG_SUPPORT_ESCAPE=true
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
+    networks:
+      - log_network
     depends_on:
       - elasticsearch
-      - postgres
-    volumes:
-      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./logstash/postgresql-42.2.18.jar:/usr/share/logstash/postgresql-42.2.18.jar
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: elasticsearch
+    environment: ['CLI_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
     ports:
-      - "5000:5000"
+      - "9200:9200"
+    networks:
+      - log_network
+
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - log_network
+    depends_on:
+      - elasticsearch
+
+volumes:
+  postgres:
+  logstash:
+
+
+networks:
+  log_network:
+    driver: bridge
