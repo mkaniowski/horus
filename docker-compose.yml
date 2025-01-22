@@ -12,12 +12,18 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres:/var/lib/postgresql/data
+    networks:
+      - log_network
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.10.2
     container_name: logstash
     volumes:
-      - ./logstash-pipeline/:/usr/share/logstash/pipeline/
+      - ./logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/postgresql-42.2.18.jar:/usr/share/logstash/postgresql-42.2.18.jar
+      - ./logstash/config/certs:/usr/share/logstash/config/certs
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
     ports:
       - "5044:5044" # Beats input port
       - "9600:9600" # Logstash monitoring API
@@ -27,32 +33,72 @@ services:
       - log_network
     depends_on:
       - elasticsearch
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2048M
+        reservations:
+          cpus: '2'
+          memory: 1024M
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
     container_name: elasticsearch
-    environment: ['CLI_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
+    environment:
+      - "CLI_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "bootstrap.memory_lock=true"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=true" # Enable security
     ports:
       - "9200:9200"
+    volumes:
+      - "./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+      - "./elasticsearch/config/certs:/usr/share/elasticsearch/config/certs"
     networks:
       - log_network
-
+    deploy:
+      resources:
+        limits:
+          cpus: '6'
+          memory: 4096M
+        reservations:
+          cpus: '2'
+          memory: 2048M
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.10.2
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SERVICE_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2RlZmF1bHQ6bFoxUEloODBUZ21CMDJvVm1GcWpSUQ
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/instance.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/instance.key
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca.crt
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=JzPweQGYt-e3RkS=Ko+N
+    volumes:
+      - ./kibana:/usr/share/kibana/config/
     ports:
       - "5601:5601"
     networks:
       - log_network
     depends_on:
       - elasticsearch
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2048M
+        reservations:
+          cpus: '1'
+          memory: 512M
 
 volumes:
   postgres:
   logstash:
+  kibana:
+  elasticsearch:
 
 
 networks:

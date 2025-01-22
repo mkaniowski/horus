@@ -1,0 +1,28 @@
+# --------------------------------------------------------------------------------
+
+# Enable security features
+xpack.security.enabled: true
+
+xpack.security.enrollment.enabled: true
+
+# Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: certs/elasticsearch-http.p12
+  keystore.password: "123"
+
+xpack:
+  security:
+    enrollment:
+      enabled: false
+
+network.host: "0.0.0.0"
+http.port: "9200"
+
+
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  key: certs/instance.key
+  certificate: certs/instance.crt
+  certificate_authorities: [ "certs/ca.crt" ]

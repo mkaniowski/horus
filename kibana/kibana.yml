@@ -1,0 +1,47 @@
+### >>>>>>> BACKUP START: Kibana interactive setup (2025-01-21T03:20:13.464Z)
+
+#
+# SAMPLE KIBANA CONFIGURATION FOR ENABLING SSL TO ELASTICSEARCH
+#
+# This is a sample configuration snippet for Kibana that configures SSL for connections to Elasticsearch
+#
+# This was automatically generated at: 2025-01-20 13:48:20Z
+# This configuration was intended for version 8.10.2
+#
+# You should review these settings, and then update the main kibana.yml configuration file.
+#
+#-------------------------------------------------------------------------------------------------
+#  You also need to update the URLs in your "elasticsearch.hosts" setting to use the "https" URL.
+#  e.g. If your kibana.yml file currently has
+#
+#  elasticsearch.hosts: [ "http://localhost:9200" ]
+#
+#  then you should change this to:
+#
+#  elasticsearch.hosts: [ "https://localhost:9200" ]
+#
+#-------------------------------------------------------------------------------------------------
+
+# This configures Kibana to trust a specific Certificate Authority for connections to Elasticsearch
+#elasticsearch.ssl.certificateAuthorities: [ "config/ca.crt" ]
+
+#server.host: "0.0.0.0"
+#server.shutdownTimeout: "5s"
+#elasticsearch.hosts: [ "https://elasticsearch:9200" ]
+#monitoring.ui.container.elasticsearch.enabled: true
+### >>>>>>> BACKUP END: Kibana interactive setup (2025-01-21T03:20:13.464Z)
+
+# This section was automatically generated during setup.
+#elasticsearch.ssl.certificateAuthorities: [/usr/share/kibana/data/ca_1737429613458.crt]
+server.host: 0.0.0.0
+server.shutdownTimeout: 5s
+elasticsearch.hosts: ['https://elasticsearch:9200']
+monitoring.ui.container.elasticsearch.enabled: true
+elasticsearch.username: kibana_system
+elasticsearch.password: JzPweQGYt-e3RkS=Ko+N
+xpack.fleet.outputs: [{id: fleet-default-output, name: default, is_default: true, is_default_monitoring: true, type: elasticsearch, hosts: ['https://elasticsearch:9200'], ca_trusted_fingerprint: 28f15fef979cd88b8777eaca76c8cb702d84e3bd324cd15a16fb19407957ec73}]
+xpack:
+  encryptedSavedObjects:
+    encryptionKey: 5dXDkzRGC7&Ba&KM&s+$6gvV6fjg=37g
+#kXaYOsNu-HBfTWw_2Ikl
+#JzPweQGYt-e3RkS=Ko+N

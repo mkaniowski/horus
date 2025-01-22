@@ -1,10 +1,12 @@
 package org.horus.horus.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.ColumnDefault
 import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -27,6 +29,7 @@ open class LogEntity {
 
     @NotNull
     @Column(name = "\"timestamp\"", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     open var timestamp: Instant? = null
 
     @Size(max = 10)
@@ -64,4 +67,8 @@ open class LogEntity {
     @NotNull
     @Column(name = "request_length", nullable = false)
     open var requestLength: Int? = null
+
+    @NotNull
+    @Column(name = "message", nullable = false)
+    open var message: String? = null
 }

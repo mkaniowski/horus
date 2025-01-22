@@ -1,104 +1,105 @@
-# Plan aplikacji do analizy logów
 
-### Cel:
+# Horus: Log analysis and threat detection
 
-Aplikacja analizuje logi backendowe w celu wykrywania potencjalnych zagrożeń, takich jak:
 
-- Ataki brute-force,
-- Ataki DDoS,
-- Nieautoryzowane próby dostępu,
-- Aktywność botów.
 
-### Technologia:
+## How to run
 
-- **Backend**: Kotlin
-- **Logi i monitoring**: Grafana Loki
-- **Wizualizacja i dashboard**: Grafana
-- **Frontend**: React
+Create docker containers
 
-## 1. Architektura Systemu
+```bash
+  docker-compose up -d
+```
 
-### Komponenty:
+Add elastic user
 
-- **Loki**: Przechowywanie i indeksowanie logów backendowych.
-- **Grafana**: Wizualizacja logów oraz dashboard do monitorowania i konfiguracji alertów.
-- **Backend (Kotlin)**: Analiza logów, wykrywanie podejrzanych wzorców, integracja z Loki, logika automatycznych
-  reakcji.
-- **Frontend (React)**: Interfejs użytkownika do przeglądania logów, alertów oraz konfiguracji zasad bezpieczeństwa.
+```bash
+  docker exec elasticsearch bin/elasticsearch-users useradd <username> -p <password> -r superuser
+```
 
-### Przepływ Danych:
+Check if connection between elasticsearch, kibana and logstash works
 
-1. Backend zapisuje logi aplikacji do Loki, uwzględniając szczegóły takie jak adres IP, typ żądania, kod odpowiedzi,
-   czas trwania żądania.
-2. Loki indeksuje logi i umożliwia ich analizę oraz przeszukiwanie.
-3. Grafana pobiera dane z Loki i wyświetla je na dashboardzie.
-4. Backend analizuje logi na żywo, wykrywając wzorce potencjalnych ataków, i generuje alerty do interfejsu React oraz
-   Grafana.
+```bash
+docker logs <elasticsearch | kibana | logstash>
+```
 
----
+If there are no errors open [Kibana web server](https://localhost:5601)
 
-## 2. Implementacja Kluczowych Funkcjonalności
 
-### a. Zbieranie i Przesyłanie Logów
+### What to do if kibana/logstash can't reach elasticsearch
 
-- **Konfiguracja logów w backendzie**: Zadbaj, aby logi zawierały:
-    - Adres IP (`X-Forwarded-For` lub `RemoteAddr`),
-    - Nagłówek User-Agent,
-    - Typ i czas operacji,
-    - Status odpowiedzi HTTP.
-- **Wysyłanie logów do Loki**: Użyj loki-loggera do automatycznego przesyłania logów do serwera Loki.
+Generate new certificate authorities
 
-### b. Detekcja Ataków
+```bash
+  docker exec bin/elasticsearch-certutil ca --pem --out /usr/share/elasticsearch/config/certs/elastic-stack-ca.zip
+```
 
-1. **Brute-force**: Wykrywanie wielokrotnych nieudanych prób logowania z jednego IP w krótkim czasie.
-    - Analiza żądań przychodzących przez Loki lub Kotlin, zliczając błędy logowania z tego samego IP.
-    - Po przekroczeniu określonego progu, wygenerowanie alertu i ewentualna blokada.
+Unzip this archive. Inside it there should be 2 files: `ca.crt` and `ca.key`
 
-2. **DDoS**: Analiza liczby żądań z tego samego IP lub regionu w krótkim czasie.
-    - Filtrowanie żądań przez Loki, aby sprawdzić, czy liczba żądań przekracza ustalone limity.
-    - Dynamiczna blokada IP lub modyfikacja firewall w przypadku ataku.
+Copy these files to:
+- elasticsearchh/config/certs
+- logstash/config/certs
+- kibana/certs
 
-3. **Unauthorized Requests**: Detekcja prób dostępu do zasobów bez autoryzacji.
-    - Monitorowanie statusów odpowiedzi 403 lub 401.
-    - Generowanie alertów z możliwością przeglądu szczegółowych logów.
+Now run this command to generate certificate for elasticsearch with Subject Alternative Names (SAN):
 
-4. **Bot Detection**: Wykrywanie ruchu botów poprzez analizę:
-    - **Powtarzalność requestów**: Równe odstępy czasowe między żądaniami z jednego adresu IP lub User-Agent mogą
-      sugerować boty.
-    - **Szybkość wysyłania requestów**: Znacznie szybsze niż przeciętny użytkownik odstępy między żądaniami mogą
-      wskazywać na aktywność botów.
-    - **Nagłówek User-Agent**: Filtry mogą wykrywać nietypowe lub niestandardowe wzorce User-Agent.
+```bash
+docker exec elasticsearch bin/elasticsearch-certutil cert --ca-cert /usr/share/elasticsearch/config/certs/ca.crt \
+  --ca-key /usr/share/elasticsearch/config/certs/ca.key \
+  --name elasticsearch-http \
+  --dns localhost,127.0.0.1,elasticsearch,logstash \
+  --ip 127.0.0.1,172.26.0.3,192.168.32.1,192.168.32.2,192.168.32.3,192.168.32.4,192.168.32.5 \
+  --out /usr/share/elasticsearch/config/certs/elasticsearch-http.p12
+```
 
-   Jeśli bot zostanie wykryty, możesz automatycznie blokować jego adres IP lub obniżyć jego priorytet.
+Restart all containers:
 
----
+```bash
+docker restart elasticsearch
+docker restart logstash
+docker restart kibana
+```
 
-## 3. Tworzenie Systemu Alertów
+## Configuration files
 
-- **Alerty Grafana**: Ustaw zapytania w Grafana, które uruchamiają alerty w przypadku wykrycia podejrzanych działań,
-  takich jak nagły wzrost prób logowania lub nieautoryzowane żądania.
-- **Alerty w aplikacji**: Backend w Kotlinie może generować alerty na podstawie analizy logów i wysyłać je do interfejsu
-  React.
+### Elasticsearch
 
----
+Elasticsearch configuration file can be found at `elasticsearch/config/elasticsearchh.yml`
 
-## 4. Frontend w React
+Key fields:
 
-- **Panel administracyjny**: Interfejs do przeglądania logów, alertów i statystyk.
-- **Ustawienia polityk bezpieczeństwa**: Możliwość konfiguracji progów, przy których system wykrywa atak.
-- **Integracja z Grafana**: Osadzenie paneli Grafana lub korzystanie z API do wyświetlania wykresów na żywo.
+- `xpack.security.http.ssl.keystore.path` - path to keystore (.p12 file)
+- `xpack.security.http.ssl.keystore.password` - password to keystore
 
----
+### Kibana
 
-## 5. Przetestowanie i Optymalizacja
+Kibana configuration file can be found at `kibana/kibana.yml`
 
-- **Testy obciążeniowe**: Symulacja różnych ataków, aby sprawdzić, czy system odpowiednio reaguje.
-- **Optymalizacja alertów i progów wykrywania**: Redukcja fałszywych alarmów poprzez kalibrację ustawień.
+Key fields:
 
----
+- `elasticsearch.username`
+- `elasticsearch.password`
 
-## Podsumowanie
+### Logstash
 
-Dzięki Loki i Grafana uzyskasz centralne miejsce do monitorowania logów i wykrywania podejrzanych działań. Kotlin
-pozwala na zaawansowaną analizę danych na backendzie, a React ułatwi zarządzanie alertami i konfiguracją polityk
-bezpieczeństwa.
+Logstash configuration files can be found at:
+- `logstash/config/logstash.yml`
+- `logstash/config/pipelines.yml`
+- `logstash/pipeline/logstash.conf`
+
+Key fields in `logstash.yml`:
+
+- `xpack.monitoring.elasticsearch.username`
+- `xpack.monitoring.elasticsearch.password`
+
+
+Key fields in `pipelines.yml`:
+
+- `path.config` - path to config file with pipeline
+
+File `logstash.conf` is file where you can create pipelines for logstash. Exmaple file takes logs from postgres database and filters them with grok. At the end it outputs them to elasticsearch.
+
+## Authors
+
+- [@mkaniowski](https://www.github.com/mkaniowski)
+

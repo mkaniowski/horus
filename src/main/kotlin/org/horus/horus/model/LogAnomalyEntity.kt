@@ -1,5 +1,6 @@
 package org.horus.horus.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -18,10 +19,12 @@ open class LogAnomalyEntity {
 
     @NotNull
     @Column(name = "timestamp_from", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     open var timestampFrom: Instant? = null
 
     @NotNull
     @Column(name = "timestamp_to", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     open var timestampTo: Instant? = null
 
     @Size(max = 20)

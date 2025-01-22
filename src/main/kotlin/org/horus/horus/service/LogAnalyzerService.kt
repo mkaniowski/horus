@@ -179,7 +179,6 @@ class LogAnalyzerService(
     }
 
 
-    @Scheduled(fixedRate = 30000)
     fun scheduledAnalyzeLogs() {
         val lastAnalyzedTimestamp = lastAnalyzedTimestampRepository.findById("last_analyzed")
             .orElse(LastAnalyzedTimestamp(timestamp = Instant.EPOCH))

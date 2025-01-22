@@ -1,5 +1,6 @@
 package org.horus.horus.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -14,5 +15,6 @@ data class LastAnalyzedTimestamp (
     val id: String = "last_analyzed",
 
     @Column(name = "\"timestamp\"", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     var timestamp: Instant? = null
 )

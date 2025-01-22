@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS logs
     "id"              UUID         NOT NULL DEFAULT gen_random_uuid(),
     "ip"              VARCHAR(15)  NOT NULL,
     "user"            VARCHAR(255),
-    "timestamp"       TIMESTAMP    NOT NULL,
+    "timestamp"       TIMESTAMPTZ  NOT NULL,
     "method"          VARCHAR(10)  NOT NULL,
     "endpoint"        VARCHAR(255) NOT NULL,
     "protocol"        VARCHAR(10)  NOT NULL,
@@ -20,21 +20,22 @@ CREATE TABLE IF NOT EXISTS logs
 CREATE TABLE IF NOT EXISTS logs_anomalies
 (
     "id"              UUID         NOT NULL DEFAULT gen_random_uuid(),
-    "timestamp_from"  TIMESTAMP    NOT NULL,
-    "timestamp_to"    TIMESTAMP    NOT NULL,
+    "timestamp_from"  TIMESTAMPTZ  NOT NULL,
+    "timestamp_to"    TIMESTAMPTZ  NOT NULL,
     "level"           VARCHAR(20)  NOT NULL,
     "endpoint"        VARCHAR(255) NOT NULL,
     "number_of_hits"  INTEGER      NOT NULL,
     "anomaly_type"    VARCHAR(255),
     "body_bytes_sent" INTEGER      NOT NULL,
     "request_length"  INTEGER      NOT NULL,
+    "message"         TEXT         NOT NULL,
     PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS last_analyzed_timestamp
 (
-    "id"        VARCHAR   NOT NULL,
-    "timestamp" TIMESTAMP NOT NULL,
+    "id"        VARCHAR     NOT NULL,
+    "timestamp" TIMESTAMPTZ NOT NULL,
     PRIMARY KEY ("id")
 );
 
