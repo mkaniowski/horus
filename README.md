@@ -1,7 +1,4 @@
-
 # Horus: Log analysis and threat detection
-
-
 
 ## How to run
 
@@ -25,7 +22,6 @@ docker logs <elasticsearch | kibana | logstash>
 
 If there are no errors open [Kibana web server](https://localhost:5601)
 
-
 ### What to do if kibana/logstash can't reach elasticsearch
 
 Generate new certificate authorities
@@ -37,6 +33,7 @@ Generate new certificate authorities
 Unzip this archive. Inside it there should be 2 files: `ca.crt` and `ca.key`
 
 Copy these files to:
+
 - elasticsearchh/config/certs
 - logstash/config/certs
 - kibana/certs
@@ -59,6 +56,17 @@ docker restart elasticsearch
 docker restart logstash
 docker restart kibana
 ```
+
+### FakeLogger
+
+In order to create fake logs build and run horus kotlin application.
+
+To generate fake geoips
+download [GeoLite-City-Block-IPv4.csv](https://dev.maxmind.com/geoip/docs/databases/city-and-country/) and place it
+there:
+`src/main/resources/geoip/GeoLite2-City-Blocks-IPv4.csv`
+
+When it's done simply run the application.
 
 ## Configuration files
 
@@ -83,6 +91,7 @@ Key fields:
 ### Logstash
 
 Logstash configuration files can be found at:
+
 - `logstash/config/logstash.yml`
 - `logstash/config/pipelines.yml`
 - `logstash/pipeline/logstash.conf`
@@ -92,12 +101,12 @@ Key fields in `logstash.yml`:
 - `xpack.monitoring.elasticsearch.username`
 - `xpack.monitoring.elasticsearch.password`
 
-
 Key fields in `pipelines.yml`:
 
 - `path.config` - path to config file with pipeline
 
-File `logstash.conf` is file where you can create pipelines for logstash. Exmaple file takes logs from postgres database and filters them with grok. At the end it outputs them to elasticsearch.
+File `logstash.conf` is file where you can create pipelines for logstash. Exmaple file takes logs from postgres database
+and filters them with grok. At the end it outputs them to elasticsearch.
 
 ## Authors
 
