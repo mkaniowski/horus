@@ -73,7 +73,8 @@ które nas interesują. W przypadku tego systemu analozowane są tylko logi HTTP
 możliwość dodania kolejnych integracji i zbierania logów z wielu różnych źródeł. Przykładowe logi HTTP z Nginx:
 
 ```
-167.156.242.235 - - [2024-12-10 14:05:12] "PUT /admin HTTP/1.1" 200 184 "https://example.com/data" "curl/7.68.0" 629
+167.156.242.235 - - [2024-12-10 14:05:12] "PUT /admin HTTP/1.1" 200 184
+"https://example.com/data" "curl/7.68.0" 629
 ```
 
 Każdy wpis dziennika jest analizowany przez grok w celu ustrukturyzowania pól takich jak:
@@ -134,7 +135,7 @@ W tym przypadku, zdefiniowano reguły wykrywania dla:
 Każda reguła może mieć określoną wartość "severity", która pozwala na klasyfikację zagrożeń na podstawie ich
 potencjalnego wpływu na system. Dodatkowo można zdefiniowac whitelisty i blacklisty dla tych reguł.
 
-Przykłądowa reguła wykrywająca Brute Force:
+Przykładowa reguła wykrywająca Brute Force:
 
 ![Brute Force Rule](imgs/rule.png)
 
@@ -157,7 +158,7 @@ Zaindeksowane ostrzeżenia mogą być następnie wykorzystane do analizy trendó
 
 Domyślny dashboard zgłoszeń:
 
-![Dashboard](imgs/alerts.png)
+![Domyślny dashboard zgłoszeń](imgs/alerts.png)
 
 ## Rezultaty testów
 
@@ -178,7 +179,7 @@ dla tych, którzy wykupili subskrypcję.
 Wyniki te potwierdzają, że Elastic Stack może niezawodnie wykrywać i ostrzegać o wielu formach złośliwej aktywności,
 znacznie skracając czas badania podejrzanych adresów IP lub dużych transferów danych.
 
-Przykłądowe dashboardy:
+Przykładowe dashboardy:
 
 ![Dashboard1](imgs/dash1.png)
 ![Dashboard2](imgs/dash2.png)
